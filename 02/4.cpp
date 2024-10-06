@@ -12,7 +12,7 @@ public:
   {
       top = 0;
       bot = -1;
-      count = 0;  
+    count = 0;
   }
 
   int enqueue(int data)
