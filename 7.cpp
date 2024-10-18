@@ -109,19 +109,14 @@ public:
     double percentageWall = 0;
     srand(time(NULL));
 
-    // Allocate the row pointers
     maze = new int*[s];
 
-    // Randomly generate 20% wall in the maze
-    // Should the percentage be exactly 20% or can it also be less ??
-    // TODO: Try to make it exact 
     for(i = 0; i < s; ++i) {
       maze[i] = new int[s]; 
       for(j = 0; j < s; ++j) {
 
         percentageWall = static_cast<double>(wallCount + 2) * 100 / (s * s);
 
-        // Avoid closing the entrance and the exit of the maze
         maze[i][j] = (percentageWall < 20 && !((!i && !j) || (i == s - 1 && j == i))) ? (rand() % 100 < 20) : 0; 
         wallCount += maze[i][j];
       }
@@ -152,7 +147,6 @@ public:
   }
 
   int findDirection(Node* p) {
-    // Is using !maze[r+1][c] in the condition more efficient than the comparison operator ?
     if (isDeadEnd(p)) 
       return DEAD_END;
 
@@ -163,24 +157,25 @@ public:
       : LEFT;
   }
 
-  void move(Node* p, int direction) {
-    maze[p->getRow()][p->getCol()] = WALL;
+  Node move(Node p, int direction) {
+    maze[p.getRow()][p.getCol()] = WALL;
     switch (direction) {
       case DOWN:
-        p->setRow(p->getRow() + 1);
+        p.setRow(p.getRow() + 1);
         break;
       case RIGHT:
-        p->setCol(p->getCol() + 1);
+        p.setCol(p.getCol() + 1);
         break;
       case LEFT:
-        p->setCol(p->getCol() - 1);
+        p.setCol(p.getCol() - 1);
         break;
       case UP:
-        p->setRow(p->getRow() - 1);
+        p.setRow(p.getRow() - 1);
         break;
       default:
         break;
     }
+    return p;
   }
 
   int mazeCompleted(Node * p) {
@@ -196,7 +191,6 @@ public:
     }
 
     while (currentPos && isDeadEnd(currentPos)) {
-      // Block the path to avoid revisiting it
       maze[currentPos->getRow()][currentPos->getCol()] = WALL;
       path->removeElement(); 
     }
@@ -209,19 +203,19 @@ public:
     path->addElement(0, 0);
 
     Node *currentPos = path->getTop();
+    Node temp;
 
     while (currentPos && !mazeCompleted(currentPos)) {
       direction = findDirection(currentPos);
 
       if (direction != DEAD_END) {
-        move(currentPos, direction);
-        path->addElement(currentPos->getRow(), currentPos->getCol());
+        temp = move(*currentPos, direction);
+        path->addElement(temp.getRow(), temp.getCol());
         //printMazeModified(currentPos);
         //cin.ignore().get();
       }
       else {
         backtrack(path); 
-        // printMazeModified(currentPos);
       }
 
       currentPos = path->getTop();
