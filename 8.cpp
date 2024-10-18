@@ -142,7 +142,7 @@ public:
     double percentageWall = 0;
     srand(time(NULL));
 
-    maze = new Grid[s * s];  // 1D array representing 2D grid
+    maze = new Grid[s * s];
 
     for (i = 0; i < s; ++i) {
       for (j = 0; j < s; ++j) {
@@ -155,7 +155,6 @@ public:
           maze[index].setState(SPACE);
         wallCount += maze[index].getState();
 
-        // Set directional pointers
         if (i > 0) maze[index].setDir(UP, &maze[(i - 1) * s + j]);
         if (i < s - 1) maze[index].setDir(DOWN, &maze[(i + 1) * s + j]);
         if (j > 0) maze[index].setDir(LEFT, &maze[i * s + (j - 1)]);
@@ -237,9 +236,9 @@ public:
         backtrack(path);
         currentPos = path->getTop();
       }
-      // printMaze();
-      // std::cout << std::endl;
     }
+
+    if (!path->isEmpty()) path->addElement(currentPos);
 
     return path;
   }
