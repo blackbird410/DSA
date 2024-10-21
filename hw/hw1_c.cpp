@@ -8,8 +8,9 @@
 // - The histogram of word counts sorted in alphabetical order
 // - The statistics of character counts in ascending order to two separate output files
 
-#define HISTOGRAM_FILE "word_histogram.txt"
-#define CHARACTER_FILE "character_statistics.txt"
+#define HISTOGRAM_FILE "hist.txt"
+#define CHARACTER_FILE "freq.txt"
+#define INPUT_FILE "input.txt"
 #define ASCII_CHARACTERS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 using namespace std;
@@ -346,15 +347,10 @@ void WordStatistics::outputStatistics() {
 
 int main (int argc, char *argv[]) {
   WordStatistics *analysis;
-  string filepath;
-
-  cout << "------------------ Word Statistics ------------------" << endl;
-  cout << "-----------------------------------------------------" << endl;
-  cout << "Please enter the file path: ";
-  cin >> filepath;
   
-  analysis = new WordStatistics(filepath);
+  analysis = new WordStatistics(INPUT_FILE);
   analysis->outputStatistics();
+  cout << "Analysis completed!" << endl;
 
   delete analysis;
   
