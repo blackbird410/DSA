@@ -41,7 +41,7 @@ public:
   }
 
   friend ostream& operator<<(ostream &os, const Frequency &f) {
-    os << f.value << "\t\t" << f.frequency;
+    os << f.value << "\t" << f.frequency;
     return os;
   }
 
@@ -226,8 +226,8 @@ public:
   }
 
 
-  void printHistogram(int maxWordLength) {
-    ofstream outFile(HISTOGRAM_FILE);
+  void printHistogram(int maxWordLength, string filename = HISTOGRAM_FILE) {
+    ofstream outFile(filename);
     Node *current = head;
 
     while (current != NULL) {
@@ -261,7 +261,7 @@ private:
 class WordStatistics {
 public:
   WordStatistics() : text{""}, wordList{new List()}, characterList{new List()} {};
-  explicit WordStatistics(const string &);
+  explicit WordStatistics(const string &, const string &, const string &);
   ~WordStatistics() {
     delete wordList;
     delete characterList;
@@ -271,13 +271,21 @@ public:
 
 private:
   string text;
+  string histogramFile;
+  string characterFile;
+
   int maxWordLength;
   List* wordList;
   List* characterList;
 };
 
-WordStatistics::WordStatistics(const string& filepath)
-  : text{""}, maxWordLength{0}, wordList{new List()}, characterList{new List()} 
+WordStatistics::WordStatistics(const string& filepath, const string& output, const string& character)
+  : text{""}, 
+  maxWordLength{0}, 
+  wordList{new List()}, 
+  characterList{new List()}, 
+  histogramFile{output}, 
+  characterFile{character} 
 {
   ifstream inFile;
   try {
@@ -337,18 +345,25 @@ void WordStatistics::outputStatistics() {
     return;
   }
 
-  ofstream outFile(CHARACTER_FILE);
+  ofstream outFile(characterFile);
 
   wordList->SortByValue();
-  wordList->printHistogram(maxWordLength);
+  wordList->printHistogram(maxWordLength, histogramFile);
   characterList->SortByFrequency();
   outFile << *characterList << endl;
 }
 
 int main (int argc, char *argv[]) {
   WordStatistics *analysis;
+  string inputFileName;
+  string outputFileName;
+  string characterFileName;
+
+  std::getline(std::cin, inputFileName);
+  std::getline(std::cin, outputFileName);
+  std::getline(std::cin, characterFileName);
   
-  analysis = new WordStatistics(INPUT_FILE);
+  analysis = new WordStatistics(inputFileName, outputFileName, characterFileName);
   analysis->outputStatistics();
   cout << "Analysis completed!" << endl;
 

@@ -1,22 +1,5 @@
 #include <iostream>
 
-// Write a recursive program to solve the 4x4 Sudoku game.
-// The program should be able to solve the following puzzle:
-// 1 2 3 4
-// 3 4 0 0
-// 2 0 4 0
-// 4 0 0 1
-
-// 1 2 3 4
-// 3 4 1 0
-// 2 0 4 0
-// 4 0 0 1
-
-// 1 2 3 4
-// 3 4 1 2
-// 2 0 1 0
-// 4 0 0 1
-
 #define SIZE 4
 #define SPACE 0
 #define SOLVED 1
@@ -60,14 +43,11 @@ public:
 
   void fillBoard() {
     int i, j, temp;
-    cout << "Entering board values..." << endl;
     for (i = 0; i < SIZE; ++i) {
       for (j = 0; j < SIZE; ++j) {
         temp = SIZE + 1;
         while (!isValid(temp)) {
-          cout << "BOARD[" << i << "][" << j << "] : ";
           cin >> temp;
-          cout << temp << endl;
         }
         board[i][j] = temp;
       }
@@ -148,9 +128,8 @@ int solveSudoku(SudokuBoard *b) {
 }
 
 int main() {
-  int temp[] = {1, 2, 3, 4, 3, 4, 0, 0, 2, 0, 4, 0, 4, 0, 0, 1};
-  SudokuBoard b(temp);
-  cout << b << endl;
+  SudokuBoard b;
+  b.fillBoard();
 
   solveSudoku(&b);
 
