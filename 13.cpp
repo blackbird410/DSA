@@ -1,4 +1,4 @@
-#include <iostream>
+//#include <iostream>
 
 template <class T> class MaxHeap {
   class Node {
@@ -148,20 +148,20 @@ public:
   }
 };
 
-int main() {
-  MaxHeap<int> *m = new MaxHeap<int>();
-  m->insert(3);
-  m->insert(1);
-  m->insert(2);
-  m->insert(9);
-  m->insert(8);
-
-  m->print(); // Expected output: 3 1 2
-  std::cout << "Count: " << m->count() << std::endl;
-  std::cout << "Extract: " << m->extract() << std::endl;
-  m->print();
-  std::cout << "Count: " << m->count() << std::endl;
-
-  delete m;
-  return 0;
-}
+// int main() {
+//   MaxHeap<int> *m = new MaxHeap<int>();
+//   m->insert(3);
+//   m->insert(1);
+//   m->insert(2);
+//   m->insert(9);
+//   m->insert(8);
+// 
+//   m->print(); // Expected output: 3 1 2
+//   std::cout << "Count: " << m->count() << std::endl;
+//   std::cout << "Extract: " << m->extract() << std::endl;
+//   m->print();
+//   std::cout << "Count: " << m->count() << std::endl;
+// 
+//   delete m;
+//   return 0;
+// }
