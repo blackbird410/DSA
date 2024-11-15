@@ -4,6 +4,7 @@
 #include <queue>
 #include <stdexcept>
 #include <vector>
+#include <ctime>
 
 #define MIN_LEVEL -1
 #define MAX_LEVEL 1
@@ -250,9 +251,6 @@ public:
   void swap(Node<T> *a, Node<T> *b) {
     if (!a || !b || a == b)
       return;
-    //std::cout << std::endl;
-    //prettyPrint();
-    //std::cout << std::endl << a << " <-> " << b << std::endl;
 
     T temp = a->value;
     a->value = b->value;
@@ -264,28 +262,26 @@ public:
       return true;
 
     int parentLevel = getLevel(parent);
-    // std::cout << n << " ??? " << parent << std::endl;
-
-    //if (!(parentLevel == MAX_LEVEL && n->value <= parent->value ||
-    //        parentLevel == MIN_LEVEL && n->value >= parent->value))
-    //  std::cout << "\nInvalid relationship between " << n << " and " << parent << std::endl;       
 
     return (parentLevel == MAX_LEVEL && n->value <= parent->value ||
             parentLevel == MIN_LEVEL && n->value >= parent->value);
   };
 
-  bool isDownLevelValid(Node<T> *n) {
-    int nodeLevel = getLevel(n);
-    return (nodeLevel == MAX_LEVEL &&
-            (!n->left || n->left && n->value >= n->left->value) &&
-            (!n->right || n->right && n->value >= n->right->value)) ||
-           (nodeLevel == MIN_LEVEL &&
-            (!n->left || n->left && n->value <= n->left->value) &&
-            (!n->right || n->right && n->value <= n->right->value));
+  int depth(const Node<T> *n) const {
+    if (!n || !n->parent)
+      return 0;
+
+    int d = 0;
+    while (n->parent) {
+      d++;
+      n = n->parent;
+    }
+
+    return d;
   };
 
   int getLevel(Node<T> *n) {
-    return (height(n) % 2 == height() % 2) ? MIN_LEVEL : MAX_LEVEL;
+    return (depth(n) % 2 == depth(root) % 2) ? MIN_LEVEL : MAX_LEVEL;
   };
 
   int height() const { return height(root); };
@@ -354,15 +350,13 @@ private:
 };
 
 int main() {
-  int data[] = {9, 58, 83, 29, 25, 26, 21, 76, 45, 81};
-  int n = sizeof(data) / sizeof(data[0]);
   MinMaxHeap<int> mmHeap;
-  int j;
+  int j, n = 20;
 
   srand(time(NULL));
-  for (j = 0; j < 10; j++)
+  for (j = 0; j < n; j++)
     mmHeap.insert(rand() % 100);
-  // mmHeap.prettyPrint();
+  mmHeap.prettyPrint();
 
   while (true) {
     try {
@@ -376,7 +370,7 @@ int main() {
   }
   std::cout << std::endl;
 
-  for (j = 0; j < 10; j++)
+  for (j = 0; j < n; j++)
     mmHeap.insert(rand() % 100);
 
   while (true) {
