@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <vector>
 #include <queue>
+#include <ctime>
 
 template <class T> class MaxHeap;
 template <class T> class Node{
@@ -71,7 +72,6 @@ public:
         q.push(p->right);
       }
     }
-    prettyPrint();
 
     // Restore heap property
     restoreHeapProperty(addedNode);
@@ -237,21 +237,17 @@ public:
 };
 
 int main() {
+  srand(time(NULL));
   MaxHeap<int> *m = new MaxHeap<int>();
-  m->insert(3);
-  m->insert(1);
-  m->insert(2);
-  m->insert(9);
-  m->insert(8);
+  for(int i = 0; i < 20; i++)
+    m->insert(rand() % 100);
 
-  m->prettyPrint(); // Expected output: 3 1 2
-  std::cout << "Extract: " << m->extract() << std::endl;
-  m->prettyPrint(); // Expected output: 3 1 2
-  std::cout << "Extract: " << m->extract() << std::endl;
-  m->prettyPrint(); // Expected output: 3 1 2
-  std::cout << "Extract: " << m->extract() << std::endl;
-  m->prettyPrint(); // Expected output: 3 1 2
-  std::cout << "Extract: " << m->extract() << std::endl;
+  m->prettyPrint();
+  while (m->count()) {
+    std::cout << m->extract() << " ";
+  }
+  std::cout << std::endl;
+  
 
   delete m;
   return 0;
