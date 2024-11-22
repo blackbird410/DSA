@@ -8,9 +8,15 @@ class SuffixTreeNode {
 public:
   std::vector<SuffixTreeNode *> children;
   std::string suffix;
+  int travelCounter;
 
-  SuffixTreeNode() : suffix("") {};
-  SuffixTreeNode(const std::string &s) : suffix(s) {};
+  friend std::ostream& operator<<(std::ostream& out, const SuffixTreeNode* n) {
+    if (n) out << n->suffix;
+    return out;
+  }
+
+  SuffixTreeNode() : suffix(""), travelCounter(0) {};
+  SuffixTreeNode(const std::string &s) : suffix(s), travelCounter(0) {};
   ~SuffixTreeNode() {
     for (auto &child : children) {
       delete child;
@@ -67,22 +73,54 @@ public:
     return false;
   }
 
-  bool exist(const std::string &substring, int start = 0) const {
-    int len = substring.length();
-    int suffixLen = suffix.length();
+  void resetTravel(SuffixTreeNode* n) {
+    if (!n) return;
+    if (n && (n->children.empty() || !n->travelCounter)) {
+      n->travelCounter = 0;
+      return;
+    }
 
-    int i = 0;
-    while (i < len && i < suffixLen && substring[i] == suffix[i]) i++;
+    for (auto& child: n->children)
+      resetTravel(child);
+  };
 
-    if (i == len && i == suffixLen) return true;
+  SuffixTreeNode* findPath(SuffixTreeNode* n, const char& c) {
+    // Find a path among the children
+    if (!n) return nullptr;
 
-    if (i < len && i == suffixLen) {
-      for (auto &child : children) {
-        if (child->exist(substring.substr(i))) return true;
+    std::cout << "\nTravelling " << n << " looking for " << c << " while being at " << n->suffix[n->travelCounter] << std::endl;
+
+    int i, len;
+
+    for (auto& child: n->children) {
+      // Travel the node value to match the character until length
+      i = child->travelCounter;
+      if (i < child->suffix.length() && child->suffix[i] == c) { 
+        // Increment the counter first before returning the value to continue the matching process
+        child->travelCounter++;
+        return child; 
+      } else {
+        std::cout << "Character " << 
       }
     }
 
-    return false;
+    return nullptr;
+  }
+
+  bool exist(const std::string &substring, int start = 0) {
+    // Find if there is a path from the start of the substring to the end in the tree
+    SuffixTreeNode* tmp = this;
+    SuffixTreeNode* p;
+    int i = 0;
+    int len = substring.length();
+
+    while (tmp && i < len) {
+      p = tmp;
+      tmp = findPath(tmp, substring[i]);
+      i++;
+    }
+
+    return i == len;
   }
 
   int count(const std::string &substring) const {
@@ -171,7 +209,7 @@ int main() {
   }
 
   SuffixTree tree(text);
-  //tree.prettyPrint();
+  tree.prettyPrint();
 
   std::string query;
   while (true) {
