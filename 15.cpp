@@ -3,155 +3,75 @@
 #include <unordered_map>
 #include <vector>
 
-// design your own SuffixTreeNode using in SuffixTree
+// design your won SuffixTreeNode using in SuffixTree
+class SuffixTree;
 class SuffixTreeNode {
-public:
   std::vector<SuffixTreeNode *> children;
-  std::string suffix;
-  int travelCounter;
+  std::vector<int> indexCounter;
+  char data;
+  bool isEnd;
 
-  friend std::ostream& operator<<(std::ostream& out, const SuffixTreeNode* n) {
-    if (n) out << n->suffix;
-    return out;
-  }
-
-  SuffixTreeNode() : suffix(""), travelCounter(0) {};
-  SuffixTreeNode(const std::string &s) : suffix(s), travelCounter(0) {};
+public:
+  SuffixTreeNode() : data('\0'), isEnd(false) {};
+  SuffixTreeNode(char c) : data(c), isEnd(false) {};
   ~SuffixTreeNode() {
-    for (auto &child : children) {
+    for (auto &child : children)
       delete child;
-    }
-  }
-
-  int findPrefixIndex(const std::string &substring) {
-    int i = 0, l = suffix.length();
-    if (!l || !substring.length()) return 0;
-
-    for (auto& c: substring) {
-      if (i >= l || c != suffix[i]) return i;
-      i++;
-    }
-
-    return i;
-  }
-
-  bool insert(const std::string &substring) {
-    // Root case
-    if (suffix.empty()) {
-      for (auto &child : children) {
-        if (child->insert(substring)) {
-          return true;
-        }
-      }
-      children.push_back(new SuffixTreeNode(substring));
-      return true;
-    }
-
-    int p = findPrefixIndex(substring);
-    if (p > 0) {
-      std::string prefix = suffix.substr(0, p);
-
-      if (p < suffix.length()) {
-        children.push_back(new SuffixTreeNode(suffix.substr(p)));
-      }
-
-
-
-      if (p < substring.length()) {
-        for (auto &child : children) {
-          if (child->insert(substring.substr(p))) {
-            return true;
-          }
-        }
-        children.push_back(new SuffixTreeNode(substring.substr(p)));
-      }
-
-      suffix = prefix;
-      return true;
-    }
-
-    return false;
-  }
-
-  void resetTravel(SuffixTreeNode* n) {
-    if (!n) return;
-    if (n && (n->children.empty() || !n->travelCounter)) {
-      n->travelCounter = 0;
-      return;
-    }
-
-    for (auto& child: n->children)
-      resetTravel(child);
+    children.clear();
   };
 
-  SuffixTreeNode* findPath(SuffixTreeNode* n, const char& c) {
-    // Find a path among the children
+  friend class SuffixTree;
+  friend std::ostream &operator<<(std::ostream &out, const SuffixTreeNode *n) {
+    if (n)
+      out << n->data;
+    return out;
+  };
+
+  SuffixTreeNode* findPath(const SuffixTreeNode* n, char c) {
     if (!n) return nullptr;
 
-    std::cout << "\nTravelling " << n << " looking for " << c << " while being at " << n->suffix[n->travelCounter] << std::endl;
-
-    int i, len;
-
-    for (auto& child: n->children) {
-      // Travel the node value to match the character until length
-      i = child->travelCounter;
-      if (i < child->suffix.length() && child->suffix[i] == c) { 
-        // Increment the counter first before returning the value to continue the matching process
-        child->travelCounter++;
-        return child; 
-      } else {
-        std::cout << "Character " << 
-      }
-    }
-
+    for (auto& child: n->children) 
+         if (child->data == c) return child;
     return nullptr;
-  }
+  };
 
-  bool exist(const std::string &substring, int start = 0) {
-    // Find if there is a path from the start of the substring to the end in the tree
-    SuffixTreeNode* tmp = this;
-    SuffixTreeNode* p;
-    int i = 0;
-    int len = substring.length();
+  SuffixTreeNode* insertNode(SuffixTreeNode* root, char c, int counter) {
+    if (!root) return nullptr;
 
-    while (tmp && i < len) {
-      p = tmp;
-      tmp = findPath(tmp, substring[i]);
-      i++;
+    SuffixTreeNode* newNode = new SuffixTreeNode(c);
+    newNode->indexCounter.push_back(counter);
+    root->children.push_back(newNode);
+    return newNode;
+  };
+
+  void insert(const std::string& s, int counter) {
+    if (s.empty()) return;
+
+    SuffixTreeNode* pathExists = findPath(this, s[0]);
+    if (pathExists) {
+      pathExists->insert(s.substr(1), counter);
+      pathExists->indexCounter.push_back(counter);
+      pathExists->isEnd = true;
+    } else {
+      SuffixTreeNode* tmp = this;
+
+      for (auto& c: s)
+        tmp = insertNode(tmp, c, counter);
+      tmp->isEnd = true;
     }
+  };
 
-    return i == len;
-  }
+  void print() {
+    std::cout << this << " : ";
 
-  int count(const std::string &substring) const {
-    int suffixLen = suffix.length();
+    for (auto& i: indexCounter) std::cout << i << " ";
+    std::cout << std::endl;
 
-    int c = 0;
-    if (!suffixLen) {
-      for (auto& child: children) {
-        c += child->count(substring);
-      }
-      return c;
-    }
+    for (const auto& child: children)
+      child->print();
 
-    int substringLen = substring.length();
-    int i = 0;
-    while (i < suffixLen && i < substringLen && suffix[i] == substring[i]) i++;
-
-    if (i == substringLen && i == suffixLen) {
-      c += 1;
-      for (auto &child: children) {
-        c += child->count(substring);
-      }
-    } 
-
-    if (i < substringLen && i == suffixLen) {
-      for (auto &child: children) {
-        c += child->count(substring.substr(i));
-      }
-    }
-
-    return c;
+    if (isEnd) 
+      std::cout << std::endl;
   }
 };
 
@@ -163,40 +83,45 @@ private:
 public:
   SuffixTree(const std::string &text) : text(text) {
     root = new SuffixTreeNode();
-    for (int i = text.length() - 1; i >= 0; i--) {
-      root->insert(text.substr(i));
-    }
+
+    int len = text.length(), i;
+    for (i = 0; i < len; i++)
+      root->insert(text.substr(i), i);
   }
 
-  bool exist(const std::string &substring) {
-    return root->exist(substring);
+  bool exist(const std::string &substring) { 
+    SuffixTreeNode* tmp = root, *p;
+    int i = 0, len = substring.length();
+    while (tmp && i < len) { 
+      p = tmp; 
+      tmp = tmp->findPath(tmp, substring[i]);
+      i++;
+    }
+
+    return (i == len && p->isEnd);
   }
 
   int count(const std::string &substring) {
-    return root->count(substring);
-  }
+    int len = substring.length();
+    if (!len) return 0;
 
-  void prettyPrint(SuffixTreeNode *node, const std::string &prefix = "") {
-    if (!node) return;
+    int i = 0;
+    SuffixTreeNode* tmp = root;
 
-    if (!node->suffix.empty()) {
-      std::cout << prefix << node->suffix << std::endl;
+    while (tmp && i < len) {
+      tmp = tmp->findPath(tmp, substring[i]);
+      i++;
     }
 
-    for (auto &child : node->children) {
-      prettyPrint(child, prefix + "  ");
-    }
+    return (i == len && tmp && tmp->isEnd) ? tmp->indexCounter.size() : 0;
   }
 
-  void prettyPrint() {
-    prettyPrint(root);
-  }
+  ~SuffixTree() { delete root; }
 
-  ~SuffixTree() {
-    delete root;
-  }
+  void print() {
+    root->print();
+  };
 };
-
 
 int main() {
   std::string text = "";
@@ -209,7 +134,7 @@ int main() {
   }
 
   SuffixTree tree(text);
-  tree.prettyPrint();
+  tree.print();
 
   std::string query;
   while (true) {
