@@ -309,20 +309,29 @@ public:
   }
 };
 
+void genRandomInputs(int* arr, int n) {
+  srand(0);
+  for (int i = 0; i < n; i++)
+    arr[i] = rand() % 100;
+};
+
 int main() {
   AVLTree<int> *tree = new AVLTree<int>();
-  srand(0);
 
   char inputs[] = {'H', 'I', 'J', 'B', 'A', 'E', 'C', 'F', 'D', 'G', 'K', 'L'};
   // int n = sizeof(inputs) / sizeof(inputs[0]);
   int n = 20;
+  int arr[n] = {};
+  genRandomInputs(arr, n);
 
-  int j, k, i;
+  int j;
   for (j = 0; j < n; j++) {
-    tree->insert(rand() % 100);
+    tree->insert(arr[j]);
     tree->inorder();
-    std::cout << "---------------------------------------" << std::endl;
     // tree->printTree();
   }
+
   tree->printTree();
+  for (const auto& i: arr) std::cout << i << " ";
+  std::cout << std::endl;
 }
