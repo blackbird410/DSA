@@ -27,35 +27,39 @@ public:
     return out;
   };
 
-  SuffixTreeNode* findPath(const SuffixTreeNode* n, char c) {
-    if (!n) return nullptr;
+  SuffixTreeNode *findPath(const SuffixTreeNode *n, char c) {
+    if (!n)
+      return nullptr;
 
-    for (auto& child: n->children) 
-         if (child->data == c) return child;
+    for (auto &child : n->children)
+      if (child->data == c)
+        return child;
     return nullptr;
   };
 
-  SuffixTreeNode* insertNode(SuffixTreeNode* root, char c, int counter) {
-    if (!root) return nullptr;
+  SuffixTreeNode *insertNode(SuffixTreeNode *root, char c, int counter) {
+    if (!root)
+      return nullptr;
 
-    SuffixTreeNode* newNode = new SuffixTreeNode(c);
+    SuffixTreeNode *newNode = new SuffixTreeNode(c);
     newNode->indexCounter.push_back(counter);
     root->children.push_back(newNode);
     return newNode;
   };
 
-  void insert(const std::string& s, int counter) {
-    if (s.empty()) return;
+  void insert(const std::string &s, int counter) {
+    if (s.empty())
+      return;
 
-    SuffixTreeNode* pathExists = findPath(this, s[0]);
+    SuffixTreeNode *pathExists = findPath(this, s[0]);
     if (pathExists) {
       pathExists->insert(s.substr(1), counter);
       pathExists->indexCounter.push_back(counter);
       pathExists->isEnd = true;
     } else {
-      SuffixTreeNode* tmp = this;
+      SuffixTreeNode *tmp = this;
 
-      for (auto& c: s)
+      for (auto &c : s)
         tmp = insertNode(tmp, c, counter);
       tmp->isEnd = true;
     }
@@ -64,13 +68,14 @@ public:
   void print() {
     std::cout << this << " : ";
 
-    for (auto& i: indexCounter) std::cout << i << " ";
+    for (auto &i : indexCounter)
+      std::cout << i << " ";
     std::cout << std::endl;
 
-    for (const auto& child: children)
+    for (const auto &child : children)
       child->print();
 
-    if (isEnd) 
+    if (isEnd)
       std::cout << std::endl;
   }
 };
@@ -89,38 +94,47 @@ public:
       root->insert(text.substr(i), i);
   }
 
-  bool exist(const std::string &substring) { 
-    SuffixTreeNode* tmp = root, *p;
+  bool exist(const std::string &substring) {
+    SuffixTreeNode *tmp = root, *p;
     int i = 0, len = substring.length();
-    while (tmp && i < len) { 
-      p = tmp; 
+
+    // std::cout << "Searching for: " << std::endl;
+
+    while (tmp && i < len) {
+      p = tmp;
       tmp = tmp->findPath(tmp, substring[i]);
+      // std::cout << "Searching at: " << tmp << std::endl;
       i++;
     }
 
-    return (i == len && p->isEnd);
+    return (i == len);
   }
 
   int count(const std::string &substring) {
     int len = substring.length();
-    if (!len) return 0;
+    if (!len)
+      return 0;
 
     int i = 0;
-    SuffixTreeNode* tmp = root;
+    SuffixTreeNode *tmp = root;
+    // std::cout << "Counting for: " << substring << std::endl;
 
     while (tmp && i < len) {
       tmp = tmp->findPath(tmp, substring[i]);
+      // std::cout << "Looking at : " << tmp << std::endl;
       i++;
     }
 
-    return (i == len && tmp && tmp->isEnd) ? tmp->indexCounter.size() : 0;
+    // std::cout << i << " ??? " << len << " | tmp = " << tmp << std::endl;
+
+    return (i == len && tmp && tmp->isEnd) ? tmp->indexCounter.size()
+           : (i == len)                    ? 1
+                                           : 0;
   }
 
   ~SuffixTree() { delete root; }
 
-  void print() {
-    root->print();
-  };
+  void print() { root->print(); };
 };
 
 int main() {
