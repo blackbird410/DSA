@@ -106,8 +106,9 @@ public:
       // std::cout << "Searching at: " << tmp << std::endl;
       i++;
     }
+    p = (tmp) ? tmp : p;
 
-    return (i == len);
+    return (i == len && substring[len - 1] == p->data);
   }
 
   int count(const std::string &substring) {
@@ -116,20 +117,22 @@ public:
       return 0;
 
     int i = 0;
-    SuffixTreeNode *tmp = root;
+    SuffixTreeNode *tmp = root, *p;
     // std::cout << "Counting for: " << substring << std::endl;
 
     while (tmp && i < len) {
+      p = tmp;
       tmp = tmp->findPath(tmp, substring[i]);
       // std::cout << "Looking at : " << tmp << std::endl;
       i++;
     }
+    p = (tmp) ? tmp : p;
 
     // std::cout << i << " ??? " << len << " | tmp = " << tmp << std::endl;
 
     return (i == len && tmp && tmp->isEnd) ? tmp->indexCounter.size()
-           : (i == len)                    ? 1
-                                           : 0;
+           : (i == len && substring[len - 1] == p->data) ? 1
+                                                           : 0;
   }
 
   ~SuffixTree() { delete root; }
