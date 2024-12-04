@@ -3,6 +3,8 @@
 *.py
 *.pdf
 *.mp4
+tests/*
+hw/*
 test.cpp
 temp.cpp
 p
