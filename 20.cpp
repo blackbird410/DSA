@@ -176,6 +176,19 @@ public:
     std::cout << std::endl;
   }
 
+  bool empty() const { return head == NULL; };
+  int size() const {
+    int count = 0;
+    ListNode<T> *current = head;
+    while (current != NULL) {
+      count++;
+      current = current->getNext();
+    }
+    return count;
+  }
+
+  ListNode<T> *getHead() const { return head; };
+
 protected:
   ListNode<T> *head, *tail;
 };
@@ -255,39 +268,79 @@ public:
     vertex->addFromTail(v);
     return v;
   }
+
   void BFS(WeightedGraphVertex<V, E> *v) {
     if (!v)
       return;
 
-    std::queue<WeightedGraphVertex<V, E> *> q;
+    LinkList<WeightedGraphVertex<V, E> *> q;
     LinkList<WeightedGraphVertex<V, E> *> visited;
+    WeightedGraphVertex<V, E> *current = nullptr;
+    WeightedGraphVertex<V, E> *otherVertex = nullptr;
 
-    q.push(v);
+    q.addFromTail(v);
     visited.addFromTail(v);
 
     while (!q.empty()) {
-      WeightedGraphVertex<V, E> *current = q.front();
-      q.pop();
+      current = q.getHead()->getData();
 
-      std::cout << current->getData() << " ";
+      q.removeFromHead();
+      visited.addFromTail(current);
 
-      // A vertex has a list of edges that we must travel in order to find the children vertices
-      ListNode<WeightedGraphEdge<V, E> *> *edgeNode = (*current)[0];
-      while (edgeNode != nullptr) {
-        WeightedGraphEdge<V, E> *edge = edgeNode->getData();
-        WeightedGraphVertex<V, E> *neighbor = edge->getAnotherEnd(current);
+      std::cout << current << " ";
 
-        if (!visited.exist(neighbor)) {
-          q.push(neighbor);
-          visited.addFromTail(neighbor);
+      // Explore the best possible route that has not been visited first
+      for (int i = 0; auto edgeNode = (*current)[i]; i++) {
+        otherVertex = (*current)[i]->getData()->getAnotherEnd(current);
+
+        if (!visited.exist(otherVertex)) {
+          q.addFromTail(otherVertex);
+          visited.addFromTail(otherVertex);
         }
-
-        edgeNode = edgeNode->getNext();
       }
     }
   }
 
-  void DFS(WeightedGraphVertex<V, E> *v) {}
+  void DFS(WeightedGraphVertex<V, E> *v,
+           LinkList<WeightedGraphVertex<V, E> *> &visited) {
+    if (!v)
+      return;
+
+    visited.addFromTail(v);
+    std::cout << v << " ";
+
+    WeightedGraphEdge<V, E> *currentEdge = nullptr;
+    WeightedGraphVertex<V, E> *otherVertex = nullptr;
+
+    // Find the best route that has not been visited yet
+    for (int i = 0; auto edgeNode = (*v)[i]; i++) {
+      otherVertex = (*v)[i]->getData()->getAnotherEnd(v);
+
+      if (!visited.exist(otherVertex))
+        DFS(otherVertex, visited);
+    }
+  }
+
+  void DFS(WeightedGraphVertex<V, E> *v) {
+    if (!v)
+      return;
+
+    LinkList<WeightedGraphVertex<V, E> *> visited;
+    DFS(v, visited);
+  }
+
+  void printGraph() {
+    for (int i = 0; i < vertex->size(); i++) {
+      WeightedGraphVertex<V, E> *v = (*vertex)[i].getData();
+      std::cout << v << ": ";
+      int j = 0;
+      while ((*v)[j] != nullptr) {
+        std::cout << (*v)[j]->getData()->getAnotherEnd(v) << " ";
+        j++;
+      }
+      std::cout << std::endl;
+    }
+  }
 
 private:
   LinkList<WeightedGraphVertex<V, E> *> *vertex;
@@ -299,6 +352,7 @@ int main() {
   LinkList<WeightedGraphVertex<char, int> *> *node =
       new LinkList<WeightedGraphVertex<char, int> *>();
   int j, k, n, a, b, w;
+
   scanf("%d", &n);
   srand(n);
   for (j = 0; j < 26; j++)
@@ -309,9 +363,12 @@ int main() {
     b = rand() % 26;
     w = rand() % 100;
     g->addLink(((*node)[a]).getData(), ((*node)[b]).getData(), w);
+    std::cout << "Added edge: " << char(a + 'A') << " -> " << char(b + 'A')
+             << " (weight " << w << ")" << std::endl;
   }
+  g->printGraph();
   g->BFS((*node)[rand() % 26].getData());
   cout << endl;
-  // g->DFS((*node)[rand() % 26].getData());
+  g->DFS((*node)[rand() % 26].getData());
   return 0;
 }
