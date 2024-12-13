@@ -309,7 +309,7 @@ public:
   }
 };
 
-void genRandomInputs(int* arr, int n) {
+void genRandomInputs(int *arr, int n) {
   srand(0);
   for (int i = 0; i < n; i++)
     arr[i] = rand() % 100;
@@ -332,6 +332,7 @@ int main() {
   }
 
   tree->printTree();
-  for (const auto& i: arr) std::cout << i << " ";
+  for (const auto &i : arr)
+    std::cout << i << " ";
   std::cout << std::endl;
 }

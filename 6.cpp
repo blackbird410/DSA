@@ -1,6 +1,6 @@
-#include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <iostream>
 
 #define SIZE 100
 
@@ -8,56 +8,50 @@
 
 using namespace std;
 
-class Node
-{
+class Node {
 public:
-	Node()
-	{
-		next = NULL;
-		pre = NULL;
-	}
-	Node(int n)
-	{
-		data = n;
-		next = NULL;
-		pre = NULL;
-	}
-	int getData() { return data; }
-	Node *getNext() { return next; }
-	Node *getPre() { return pre; }
-	void setData(int d) { data = d; }
-	void setNext(Node *n) { next = n; }
-	void setPre(Node *p) { pre = p; }
+  Node() {
+    next = NULL;
+    pre = NULL;
+  }
+  Node(int n) {
+    data = n;
+    next = NULL;
+    pre = NULL;
+  }
+  int getData() { return data; }
+  Node *getNext() { return next; }
+  Node *getPre() { return pre; }
+  void setData(int d) { data = d; }
+  void setNext(Node *n) { next = n; }
+  void setPre(Node *p) { pre = p; }
+
 private:
-	int data;
-	Node *next, *pre; 
+  int data;
+  Node *next, *pre;
 };
 
-class List
-{
+class List {
 public:
-	List() { list = NULL; }
-	List(int n) { generate(n); }
-	
-	void generate(int n)
-	{
-		int j;
-		list = NULL;
-		for(j = 0;j < n;j ++)
-			generate();
-	}
-	
-	void generate()
-	{
-		Node *buf = new Node(rand());
-		buf->setNext(list);
-		if(list != NULL)
-			list->setPre(buf);
-		list = buf;
-	}
-	
-	void bubbleSort()
-	{
+  List() { list = NULL; }
+  List(int n) { generate(n); }
+
+  void generate(int n) {
+    int j;
+    list = NULL;
+    for (j = 0; j < n; j++)
+      generate();
+  }
+
+  void generate() {
+    Node *buf = new Node(rand());
+    buf->setNext(list);
+    if (list != NULL)
+      list->setPre(buf);
+    list = buf;
+  }
+
+  void bubbleSort() {
     int swapped = 1;
     Node *current;
     Node *next;
@@ -76,10 +70,9 @@ public:
         next = next->getNext();
       }
     }
-	}
-	
-	void selectionSort()
-	{
+  }
+
+  void selectionSort() {
     Node *current = list;
     Node *smallest;
     Node *pTrav;
@@ -89,20 +82,19 @@ public:
       smallest = current;
 
       while (pTrav != NULL) {
-        if (pTrav->getData() < smallest->getData()) 
+        if (pTrav->getData() < smallest->getData())
           smallest = pTrav;
         pTrav = pTrav->getNext();
       }
 
-      if (smallest->getData() < current->getData()) 
+      if (smallest->getData() < current->getData())
         swap(current, smallest);
 
       current = current->getNext();
     }
-	}
-	
-	void insertionSort()
-	{
+  }
+
+  void insertionSort() {
     if (list != NULL) {
       Node *current = list->getNext();
       Node *prev;
@@ -116,21 +108,21 @@ public:
           swap(pTrav, prev);
           pTrav = prev;
           prev = prev->getPre();
-        } 
+        }
 
         current = current->getNext();
       }
     }
-	} 
+  }
 
- 
-  void swap(Node* a, Node* b) {
-    if (a == b) return;
+  void swap(Node *a, Node *b) {
+    if (a == b)
+      return;
 
-    Node* aPrev = a->getPre();
-    Node* aNext = a->getNext();
-    Node* bPrev = b->getPre();
-    Node* bNext = b->getNext();
+    Node *aPrev = a->getPre();
+    Node *aNext = a->getNext();
+    Node *bPrev = b->getPre();
+    Node *bNext = b->getNext();
 
     if (a->getNext() == b) {
       a->setNext(bNext);
@@ -139,10 +131,10 @@ public:
       b->setPre(aPrev);
 
       if (aPrev != NULL)
-          aPrev->setNext(b);
+        aPrev->setNext(b);
 
-      if (bNext != NULL) 
-          bNext->setPre(a);
+      if (bNext != NULL)
+        bNext->setPre(a);
 
     } else if (b->getNext() == a) {
       b->setNext(aNext);
@@ -150,24 +142,24 @@ public:
       a->setNext(b);
       a->setPre(bPrev);
 
-      if (bPrev != NULL) 
+      if (bPrev != NULL)
         bPrev->setNext(a);
 
-      if (aNext != NULL) 
+      if (aNext != NULL)
         aNext->setPre(b);
 
     } else {
-      if (aPrev != NULL) 
-          aPrev->setNext(b);
-      
-      if (aNext != NULL) 
-          aNext->setPre(b);
+      if (aPrev != NULL)
+        aPrev->setNext(b);
 
-      if (bPrev != NULL) 
-          bPrev->setNext(a);
-      
-      if (bNext != NULL) 
-          bNext->setPre(a);
+      if (aNext != NULL)
+        aNext->setPre(b);
+
+      if (bPrev != NULL)
+        bPrev->setNext(a);
+
+      if (bNext != NULL)
+        bNext->setPre(a);
 
       a->setNext(bNext);
       a->setPre(bPrev);
@@ -175,41 +167,39 @@ public:
       b->setPre(aPrev);
     }
 
-    if (list == a) 
+    if (list == a)
       list = b;
-    else if (list == b) 
+    else if (list == b)
       list = a;
   }
 
-	void print()
-	{
-		Node *cur = list;
-		while(cur != NULL)
-		{
-			cout<<cur->getData()<<" ";
-			cur = cur->getNext();
-		}
-		cout<<endl;
-	}
+  void print() {
+    Node *cur = list;
+    while (cur != NULL) {
+      cout << cur->getData() << " ";
+      cur = cur->getNext();
+    }
+    cout << endl;
+  }
+
 private:
-	Node *list;
+  Node *list;
 };
 
-int main()
-{
-	srand(time(NULL));
-	List *l = new List(10);
-	l->print();
-	l->bubbleSort();
-	l->print();
-	
-	l = new List(10);
-	l->print();
-	l->insertionSort();
-	l->print();
-	
-	l = new List(10);
-	l->print();
-	l->selectionSort();
-	l->print();
+int main() {
+  srand(time(NULL));
+  List *l = new List(10);
+  l->print();
+  l->bubbleSort();
+  l->print();
+
+  l = new List(10);
+  l->print();
+  l->insertionSort();
+  l->print();
+
+  l = new List(10);
+  l->print();
+  l->selectionSort();
+  l->print();
 }

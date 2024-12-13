@@ -1,22 +1,21 @@
-#include <iostream>
 #include <cmath>
+#include <ctime>
 #include <iomanip>
+#include <iostream>
 #include <queue>
 #include <stdexcept>
 #include <vector>
-#include <queue>
-#include <ctime>
 
 template <class T> class MaxHeap;
-template <class T> class Node{
+template <class T> class Node {
 private:
   Node<T> *left, *right, *parent;
   T value;
 
 public:
   Node(T d) : value(d), left(nullptr), right(nullptr), parent(nullptr) {}
-  Node(T d, Node<T>* p) : value(d), left(nullptr), right(nullptr), parent(p) {}
-  friend std::ostream &operator<<(std::ostream &out, const Node<T>*n) {
+  Node(T d, Node<T> *p) : value(d), left(nullptr), right(nullptr), parent(p) {}
+  friend std::ostream &operator<<(std::ostream &out, const Node<T> *n) {
     if (n)
       out << n->value;
     return out;
@@ -24,16 +23,15 @@ public:
   friend class MaxHeap<T>;
 };
 
-
 template <class T> class MaxHeap {
-  Node<T>* root;
+  Node<T> *root;
 
 public:
   // Constructing a empty heap.
   MaxHeap() : root(nullptr) {}
   ~MaxHeap() { deleteNode(root); }
 
-  void deleteNode(Node<T>*n) {
+  void deleteNode(Node<T> *n) {
     if (n) {
       deleteNode(n->left);
       deleteNode(n->right);
@@ -77,8 +75,9 @@ public:
     restoreHeapProperty(addedNode);
   }
 
-  void restoreHeapProperty(Node<T>* n)  {
-    if (!n || !n->parent) return;
+  void restoreHeapProperty(Node<T> *n) {
+    if (!n || !n->parent)
+      return;
 
     if (n->value > n->parent->value) {
       swap(n, n->parent);
@@ -86,7 +85,7 @@ public:
     }
   }
 
-  T extractLastNode(Node<T>*n, Node<T>*parent, bool isLeft) {
+  T extractLastNode(Node<T> *n, Node<T> *parent, bool isLeft) {
     if (!n->left && !n->right) {
       T value = n->value;
       delete n;
@@ -110,7 +109,7 @@ public:
 
   T extractLastNode() { return extractLastNode(root, nullptr, false); };
 
-  void swap(Node<T>*a, Node<T>*b) {
+  void swap(Node<T> *a, Node<T> *b) {
     T temp = a->value;
     a->value = b->value;
     b->value = temp;
@@ -131,13 +130,13 @@ public:
     root->value = lastNodeData;
 
     // Restore the heap property
-    Node<T>*pTrav = root;
+    Node<T> *pTrav = root;
     while (pTrav) {
-      Node<T>*maxChild = nullptr;
+      Node<T> *maxChild = nullptr;
 
       if (pTrav->left && pTrav->right) {
         maxChild = (pTrav->left->value > pTrav->right->value) ? pTrav->left
-                                                            : pTrav->right;
+                                                              : pTrav->right;
       } else if (pTrav->left) {
         maxChild = pTrav->left;
       }
@@ -156,7 +155,7 @@ public:
   // Return the number of element int the heap.
   int count() { return count(root); };
 
-  int count(Node<T>*n) {
+  int count(Node<T> *n) {
     if (!n)
       return 0;
     return count(n->left) + count(n->right) + 1;
@@ -167,7 +166,7 @@ public:
     std::cout << std::endl;
   }
 
-  void print(Node<T>*n) {
+  void print(Node<T> *n) {
     if (!n)
       return;
     std::cout << n->value << " ";
@@ -239,7 +238,7 @@ public:
 int main() {
   srand(time(NULL));
   MaxHeap<int> *m = new MaxHeap<int>();
-  for(int i = 0; i < 20; i++)
+  for (int i = 0; i < 20; i++)
     m->insert(rand() % 100);
 
   m->prettyPrint();
@@ -247,7 +246,6 @@ int main() {
     std::cout << m->extract() << " ";
   }
   std::cout << std::endl;
-  
 
   delete m;
   return 0;

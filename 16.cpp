@@ -18,10 +18,10 @@ public:
   TrieNode(const char &letter, bool end = false) : data(letter), isEnd(end) {};
 
   ~TrieNode() {
-      for (auto &child : children) {
-          delete child;
-      }
-      children.clear();
+    for (auto &child : children) {
+      delete child;
+    }
+    children.clear();
   }
 
   friend class Trie;

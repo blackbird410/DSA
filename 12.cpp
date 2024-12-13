@@ -7,8 +7,8 @@
 
 // Output
 // Inorder: (((-12 + 3 )* 4 )% 5 )
-// Preorder: % * + -12 3 4 5 
-// Postorder: -12 3 + 4 * 5 % 
+// Preorder: % * + -12 3 4 5
+// Postorder: -12 3 + 4 * 5 %
 // Evaluated result: -1
 
 #define OPERATOR 1
@@ -77,13 +77,13 @@ public:
         std::string subExp = getSubExpression(tempExpression);
         i += subExp.length() + 1;
 
-        ExpressionTree* subTree = new ExpressionTree(subExp);
-        if (!root) 
-            root = subTree->root;
-        else if (!root->left) 
-            root->left = subTree->root;
+        ExpressionTree *subTree = new ExpressionTree(subExp);
+        if (!root)
+          root = subTree->root;
+        else if (!root->left)
+          root->left = subTree->root;
         else
-            root->right = subTree->root;
+          root->right = subTree->root;
         break;
       }
       case OPERATOR: {
@@ -122,9 +122,12 @@ public:
         --i;
 
         newNode = new Node(temp);
-        if (!root) root = newNode;
-        else if (!root->left) root->left = newNode;
-        else root->right = newNode;
+        if (!root)
+          root = newNode;
+        else if (!root->left)
+          root->left = newNode;
+        else
+          root->right = newNode;
 
         // root->status();
         break;

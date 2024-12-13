@@ -3,8 +3,7 @@
 
 using namespace std;
 
-template<class T>
-class BinarySearchTree {
+template <class T> class BinarySearchTree {
 private:
   struct Node {
     T data;
@@ -12,7 +11,7 @@ private:
   };
 
   void inorder(Node *cur) {
-    if(!cur)
+    if (!cur)
       return;
     inorder(cur->left);
     cout << cur->data << " ";
@@ -20,11 +19,12 @@ private:
   }
 
   Node *root;
+
 public:
   BinarySearchTree() : root(nullptr) {}
 
-  void insertElement(Node* n, T data) {
-    Node*  newNode = new Node();
+  void insertElement(Node *n, T data) {
+    Node *newNode = new Node();
     newNode->data = data;
     newNode->left = newNode->right = nullptr;
 
@@ -33,13 +33,12 @@ public:
         n->left = newNode;
       else
         insertElement(n->left, data);
-    }
-    else {
+    } else {
       if (!n->right)
         n->right = newNode;
       else
         insertElement(n->right, data);
-    } 
+    }
   }
 
   void insertElement(T d) {
@@ -58,21 +57,20 @@ public:
     cout << endl;
   }
 
-  bool search(Node* n, T d) {
-    if (!n) return false; 
+  bool search(Node *n, T d) {
+    if (!n)
+      return false;
 
-    return (n->data == d) 
-      ? true : (d < n->data) 
-      ? search(n->left, d) 
-      : search(n->right, d);
+    return (n->data == d)  ? true
+           : (d < n->data) ? search(n->left, d)
+                           : search(n->right, d);
   };
 
-  bool search(T d) {
-    return (!root) ? false : search(root, d);
-  }
+  bool search(T d) { return (!root) ? false : search(root, d); }
 
-  int height(Node* n) {
-    if (!n) return 0;
+  int height(Node *n) {
+    if (!n)
+      return 0;
 
     int heightLeft = height(n->left) + 1;
     int heightRight = height(n->right) + 1;
@@ -80,39 +78,31 @@ public:
     return (heightLeft > heightRight) ? heightLeft : heightRight;
   };
 
-  int height() {
-    return height(root);
-  }
-
+  int height() { return height(root); }
 };
 
 int main() {
   int data;
   string command;
   BinarySearchTree<int> *bst = new BinarySearchTree<int>();
-  while(true) {
+  while (true) {
     cout << "Command: ";
     cin >> command;
-    if(command == "insert") {
+    if (command == "insert") {
       cin >> data;
       bst->insertElement(data);
-    }
-    else if(command == "search") {
+    } else if (command == "search") {
       cin >> data;
-      if(bst->search(data))
+      if (bst->search(data))
         cout << "true" << endl;
       else
         cout << "false" << endl;
-    }
-    else if(command == "height") {
+    } else if (command == "height") {
       cout << bst->height() << endl;
-    }
-    else if(command == "print") {
+    } else if (command == "print") {
       bst->print();
-    }
-    else if(command == "exit") {
+    } else if (command == "exit") {
       break;
     }
   }
 }
-

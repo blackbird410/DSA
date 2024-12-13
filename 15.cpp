@@ -132,7 +132,7 @@ public:
 
     return (i == len && tmp && tmp->isEnd) ? tmp->indexCounter.size()
            : (i == len && substring[len - 1] == p->data) ? 1
-                                                           : 0;
+                                                         : 0;
   }
 
   ~SuffixTree() { delete root; }

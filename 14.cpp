@@ -1,10 +1,10 @@
 #include <cmath>
+#include <ctime>
 #include <iomanip>
 #include <iostream>
 #include <queue>
 #include <stdexcept>
 #include <vector>
-#include <ctime>
 
 #define MIN_LEVEL -1
 #define MAX_LEVEL 1
@@ -99,7 +99,6 @@ public:
 
     // First confirm that added node has good relationship with the upper nodes
     // Then with the downward nodes while considering the level of each node
-    
 
     if (direction == UP) {
       Node<T> *parent = n->parent;
@@ -122,7 +121,6 @@ public:
         swap(n, n->left);
       if (!isValidRelationship(n->right, n))
         swap(n, n->right);
-
 
       if (getLevel(p) == MIN_LEVEL) {
         if (n->left && n->left->left && n->left->left->value < p->value)
