@@ -172,6 +172,18 @@ public:
     std::cout << std::endl;
   }
 
+  bool empty() const { return !head && !tail; };
+
+  int count() const {
+    ListNode<T>* tmp = head;
+    int c = 0;
+    while (tmp) {
+      tmp = tmp->getNext();
+      c++;
+    }
+    return c;
+  };
+
 protected:
   ListNode<T> *head, *tail;
 };
@@ -182,10 +194,12 @@ public:
   void push(T d) { this->addFromTail(d); }
   ListNode<T> *pop() { return this->removeFromTail(); }
   bool isEmpty() { return this->head == NULL; }
-
-private:
+  bool exist(ListNode<T>* node) const {
+    return exist(node);
+  };
 };
 
+template <class T> class Graph;
 template <class T> class GraphNode : public Node<T> {
 public:
   GraphNode() : Node<T>() { list = new LinkList<T>(); }
@@ -197,9 +211,17 @@ public:
     return false;
   }
   void remove(GraphNode<T> *node) {}
+  GraphNode<T>* operator[](int n) {
+      try {
+          return (*list)[n].getData();
+      } catch (std::invalid_argument&) {
+          return nullptr;
+      }
+  }
 
 private:
   LinkList<GraphNode<T> *> *list;
+  friend class Graph<T>;
 };
 
 template <class T> class Graph {
@@ -221,6 +243,7 @@ public:
   bool isLinked(GraphNode<T> *node1, GraphNode<T> *node2) {
     return node1->exist(node2);
   }
+
   GraphNode<T> *operator[](char i) {
     try {
       int j = 0;
@@ -248,25 +271,87 @@ public:
   /*
           return true if this graph is a forest, return false if not.
   */
-  bool isForest() { return true; }
+  bool isForest() { 
+    // Determine for every node in the graph if we can find a cycle path for it
+    for (int i = 0; i < count; i++)
+      if (hasCycle((*vertex)[i].getData())) return false;
+    return true; 
+  }
+
+  bool hasCycle(GraphNode<T>* node) {
+    // Build a path by using the stack
+    LinkList<GraphNode<T>*> path;
+    return findCyclePath(node, node, path);
+  };
+
+  bool findCyclePath(GraphNode<T>* start, GraphNode<T>* current, LinkList<GraphNode<T>*>& path) {
+    std::cout << "\nPath: ";
+    path.print();
+    std::cout << std::endl;
+    if (!start || !current) return false;
+    std::cout << "Current: " << current->getData() << std::endl;
+    if (path.exist(current) && current->getData() == start->getData()) return true;
+    std::cout << "Path count: " << path.count() << std::endl;
+
+    bool isCyclePath = false;
+    path.addFromHead(current);
+    ListNode<GraphNode<T>*>* node = &(*(current->list))[0];
+    while (node) {
+      if (findCyclePath(start, node->getData(), path))
+        return true;
+      else 
+      node = node->getNext();
+    }
+
+    return false;
+  }
 
 private:
   LinkList<GraphNode<T> *> *vertex;
   int count;
 };
 
+
 int main() {
   Graph<char> *g = new Graph<char>();
   int m = 0, n = 0;
   char s, d;
-  std::cin >> m >> n;
+  // std::cin >> m >> n;
   int j;
+
+  m = 5;
+  n = 7;
+  char edges[][2] = {{'A', 'B'}, {'A', 'C'}, {'A', 'D'}, {'B', 'C'}, {'C', 'D'}, {'C', 'E'}, {'D', 'E'}}; 
+
+  std::cout << "Adding vertices" << std::endl;
   for (j = 0; j < m; j++)
     g->addVertex(j + 'A');
+  std::cout << "Adding edges" << std::endl;
   for (j = 0; j < n; j++) {
-    std::cin >> s >> d;
-    g->addLink((*g)[s], (*g)[d]);
+    // std::cin >> s >> d;
+    // g->addLink((*g)[s], (*g)[d]);
+    g->addLink((*g)[edges[j][0]], (*g)[edges[j][1]]);
   }
-  std::cout << g->isForest();
+  std::cout << "Graph created" << std::endl;
+  std::cout << g->isForest() << std::endl;
   return 0;
 }
+
+// int main() {
+//   Graph<char> *g = new Graph<char>();
+//   int m = 0, n = 0;
+//   char s, d;
+//   std::cin >> m >> n;
+//   int j;
+//   std::cout << "Adding vertices" << std::endl;
+//   for (j = 0; j < m; j++)
+//     g->addVertex(j + 'A');
+//   std::cout << "Adding edges" << std::endl;
+//   for (j = 0; j < n; j++) {
+//     std::cin >> s >> d;
+//     g->addLink((*g)[s], (*g)[d]);
+//   }
+//   std::cout << "Graph created" << std::endl;
+//   std::cout << g->isForest() << std::endl;
+//   return 0;
+// }
