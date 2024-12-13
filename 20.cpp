@@ -3,6 +3,7 @@
 #include <ctime>
 #include <iostream>
 #include <queue>
+#include <set>
 #include <stdexcept>
 
 using namespace std;
@@ -289,8 +290,7 @@ public:
 
       std::cout << current << " ";
 
-      // Explore the best possible route that has not been visited first
-      for (int i = 0; auto edgeNode = (*current)[i]; i++) {
+      for (int i = 0; (*current)[i]; i++) {
         otherVertex = (*current)[i]->getData()->getAnotherEnd(current);
 
         if (!visited.exist(otherVertex)) {
@@ -301,33 +301,60 @@ public:
     }
   }
 
-  void DFS(WeightedGraphVertex<V, E> *v,
-           LinkList<WeightedGraphVertex<V, E> *> &visited) {
-    if (!v)
-      return;
-
-    visited.addFromTail(v);
-    std::cout << v << " ";
-
-    WeightedGraphEdge<V, E> *currentEdge = nullptr;
-    WeightedGraphVertex<V, E> *otherVertex = nullptr;
-
-    // Find the best route that has not been visited yet
-    for (int i = 0; auto edgeNode = (*v)[i]; i++) {
-      otherVertex = (*v)[i]->getData()->getAnotherEnd(v);
-
-      if (!visited.exist(otherVertex))
-        DFS(otherVertex, visited);
-    }
-  }
-
   void DFS(WeightedGraphVertex<V, E> *v) {
     if (!v)
       return;
 
+    LinkList<WeightedGraphVertex<V, E> *> stack;
     LinkList<WeightedGraphVertex<V, E> *> visited;
-    DFS(v, visited);
+    WeightedGraphVertex<V, E> *current = nullptr;
+    WeightedGraphVertex<V, E> *otherVertex = nullptr;
+    int i;
+
+    stack.addFromHead(v);
+    while (!stack.empty()) {
+      current = stack.getHead()->getData();
+      stack.removeFromHead();
+
+      if (!visited.exist(current)) {
+        std::cout << current << " ";
+        visited.addFromTail(current);
+
+        for (i = 0; (*current)[i]; i++) {
+          otherVertex = (*current)[i]->getData()->getAnotherEnd(current);
+          if (!visited.exist(otherVertex))
+            stack.addFromHead(otherVertex);
+        }
+      }
+    }
   }
+
+  // TODO: WHY DOES THE RECURSIVE APPROACH RESULT DIFFERS ???
+
+  // void DFSUtil(WeightedGraphVertex<V, E> *v,
+  //          std::set<WeightedGraphVertex<V, E> *> &visited) {
+  //   if (!v || visited.find(v) != visited.end())
+  //     return;
+
+  //   visited.insert(v);
+  //   std::cout << v << " ";
+
+  //   WeightedGraphEdge<V, E> *currentEdge = nullptr;
+  //   WeightedGraphVertex<V, E> *otherVertex = nullptr;
+
+  //   for (int i = 0; auto edgeNode = (*v)[i]; i++) {
+  //     otherVertex = (*v)[i]->getData()->getAnotherEnd(v);
+  //     DFSUtil(otherVertex, visited);
+  //   }
+  // }
+
+  // void DFS(WeightedGraphVertex<V, E> *v) {
+  //   if (!v)
+  //     return;
+
+  //   std::set<WeightedGraphVertex<V, E> *> visited;
+  //   DFSUtil(v, visited);
+  // }
 
   void printGraph() {
     for (int i = 0; i < vertex->size(); i++) {
@@ -363,10 +390,10 @@ int main() {
     b = rand() % 26;
     w = rand() % 100;
     g->addLink(((*node)[a]).getData(), ((*node)[b]).getData(), w);
-    std::cout << "Added edge: " << char(a + 'A') << " -> " << char(b + 'A')
-             << " (weight " << w << ")" << std::endl;
+    // std::cout << "Added edge: " << char(a + 'A') << " -> " << char(b + 'A')
+    //         << " (weight " << w << ")" << std::endl;
   }
-  g->printGraph();
+  // g->printGraph();
   g->BFS((*node)[rand() % 26].getData());
   cout << endl;
   g->DFS((*node)[rand() % 26].getData());
