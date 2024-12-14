@@ -365,7 +365,20 @@ private:
 void test();
 
 int main() {
-  test();
+  // test();
+
+  Graph<char> *g = new Graph<char>();
+  int m = 0, n = 0;
+  char s, d;
+  std::cin >> m >> n;
+  int j;
+  for (j = 0; j < m; j++)
+    g->addVertex(j + 'A');
+  for (j = 0; j < n; j++) {
+    std::cin >> s >> d;
+    g->addLink((*g)[s], (*g)[d]);
+  }
+  std::cout << g->isForest() << std::endl;
   return 0;
 }
 
@@ -441,22 +454,3 @@ void test() {
   std::cout << "Total test: " << testCount << std::endl;
   std::cout << "Success: " << success << std::endl;
 }
-
-// int main() {
-//   Graph<char> *g = new Graph<char>();
-//   int m = 0, n = 0;
-//   char s, d;
-//   std::cin >> m >> n;
-//   int j;
-//   std::cout << "Adding vertices" << std::endl;
-//   for (j = 0; j < m; j++)
-//     g->addVertex(j + 'A');
-//   std::cout << "Adding edges" << std::endl;
-//   for (j = 0; j < n; j++) {
-//     std::cin >> s >> d;
-//     g->addLink((*g)[s], (*g)[d]);
-//   }
-//   std::cout << "Graph created" << std::endl;
-//   std::cout << g->isForest() << std::endl;
-//   return 0;
-// }
