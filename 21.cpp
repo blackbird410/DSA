@@ -1,7 +1,11 @@
 #include <cstdlib>
 #include <ctime>
+#include <fstream>
 #include <iostream>
+#include <queue>
+#include <sstream>
 #include <stdexcept>
+#include <unordered_map>
 
 template <class T> class Node {
 public:
@@ -175,7 +179,7 @@ public:
   bool empty() const { return !head && !tail; };
 
   int count() const {
-    ListNode<T>* tmp = head;
+    ListNode<T> *tmp = head;
     int c = 0;
     while (tmp) {
       tmp = tmp->getNext();
@@ -183,6 +187,8 @@ public:
     }
     return c;
   };
+
+  ListNode<T> *getHead() const { return head; };
 
 protected:
   ListNode<T> *head, *tail;
@@ -194,9 +200,7 @@ public:
   void push(T d) { this->addFromTail(d); }
   ListNode<T> *pop() { return this->removeFromTail(); }
   bool isEmpty() { return this->head == NULL; }
-  bool exist(ListNode<T>* node) const {
-    return exist(node);
-  };
+  bool exist(ListNode<T> *node) const { return exist(node); };
 };
 
 template <class T> class Graph;
@@ -211,12 +215,12 @@ public:
     return false;
   }
   void remove(GraphNode<T> *node) {}
-  GraphNode<T>* operator[](int n) {
-      try {
-          return (*list)[n].getData();
-      } catch (std::invalid_argument&) {
-          return nullptr;
-      }
+  GraphNode<T> *operator[](int n) {
+    try {
+      return (*list)[n].getData();
+    } catch (std::invalid_argument &) {
+      return nullptr;
+    }
   }
 
 private:
@@ -271,70 +275,171 @@ public:
   /*
           return true if this graph is a forest, return false if not.
   */
-  bool isForest() { 
-    // Determine for every node in the graph if we can find a cycle path for it
+  bool isForest() {
+    std::unordered_map<GraphNode<T> *, bool> visited;
     for (int i = 0; i < count; i++)
-      if (hasCycle((*vertex)[i].getData())) return false;
-    return true; 
-  }
+      visited[(*vertex)[i].getData()] = false;
 
-  bool hasCycle(GraphNode<T>* node) {
-    // Build a path by using the stack
-    LinkList<GraphNode<T>*> path;
-    return findCyclePath(node, node, path);
-  };
+    // std::cout << std::endl;
+    // for (int i = 0; i < count; i++) {
+    //   GraphNode<T>* start = (*vertex)[i].getData();
+    //   std::cout << start->getData() << ": ";
+    //   ListNode<GraphNode<T>*>* adjacentNode = start->list->getHead();
+    //   while (adjacentNode && adjacentNode->getData() != nullptr) {
+    //     std::cout << adjacentNode->getData()->getData() << " ";
+    //     adjacentNode = adjacentNode->getNext();
+    //   }
+    //   std::cout << std::endl;
+    // }
+    // std::cout << std::endl;
 
-  bool findCyclePath(GraphNode<T>* start, GraphNode<T>* current, LinkList<GraphNode<T>*>& path) {
-    std::cout << "\nPath: ";
-    path.print();
-    std::cout << std::endl;
-    if (!start || !current) return false;
-    std::cout << "Current: " << current->getData() << std::endl;
-    if (path.exist(current) && current->getData() == start->getData()) return true;
-    std::cout << "Path count: " << path.count() << std::endl;
-
-    bool isCyclePath = false;
-    path.addFromHead(current);
-    ListNode<GraphNode<T>*>* node = &(*(current->list))[0];
-    while (node) {
-      if (findCyclePath(start, node->getData(), path))
-        return true;
-      else 
-      node = node->getNext();
+    for (int i = 0; i < count; i++) {
+      GraphNode<T> *start = (*vertex)[i].getData();
+      // std::cout << "Checking for " << start->getData() << std::endl;
+      if (!visited[start] && hasCycle(start, visited))
+        return false;
     }
-
-    return false;
+    return true;
   }
 
 private:
   LinkList<GraphNode<T> *> *vertex;
   int count;
+
+  bool hasCycle(GraphNode<T> *start,
+                std::unordered_map<GraphNode<T> *, bool> &visited) {
+    std::queue<std::pair<GraphNode<T> *, GraphNode<T> *>> q;
+
+    // Add the source with no parent
+    q.push({start, nullptr});
+    visited[start] = true;
+
+    while (!q.empty()) {
+      auto [node, parent] = q.front();
+
+      // Printing queue
+      // auto copy = q;
+      // std::cout << "Queue: ";
+      // while (!copy.empty()) {
+      //   auto current = copy.front();
+      //   std::cout << "{" << (current.first ? current.first->getData() : ' ')
+      //             << ", " << (current.second ? current.second->getData() : '
+      //             ') << "} ";
+      //   copy.pop();
+      // }
+
+      q.pop();
+
+      // std::cout << std::endl;
+      // std::cout << "Cycle for: " << node->getData() << std::endl;
+
+      // Visit all the adjacent nodes
+      ListNode<GraphNode<T> *> *adjacentNode = node->list->getHead();
+      while (adjacentNode && adjacentNode->getData() != nullptr) {
+        GraphNode<T> *adj = adjacentNode->getData();
+        // std::cout << "Adjacent node: " << adj->getData() << std::endl;
+
+        if (!visited[adj]) {
+          visited[adj] = true;
+          q.push({adj, node});
+        } else if (parent != adj) {
+          // std::cout << "Parent {" << parent << "} != adj {" << adj << "}" <<
+          // std::endl;
+          return true;
+        }
+        adjacentNode = (adjacentNode->getNext() &&
+                        isLinked(adjacentNode->getNext()->getData(),
+                                 adjacentNode->getData()))
+                           ? adjacentNode->getNext()
+                           : nullptr;
+        // if (adjacentNode == nullptr) std::cout << "Ending visit" <<
+        // std::endl; else std::cout << "Adjacent node updated to " <<
+        // adjacentNode << std::endl;
+      }
+    }
+
+    return false;
+  }
 };
 
+void test();
 
 int main() {
-  Graph<char> *g = new Graph<char>();
-  int m = 0, n = 0;
-  char s, d;
-  // std::cin >> m >> n;
-  int j;
-
-  m = 5;
-  n = 7;
-  char edges[][2] = {{'A', 'B'}, {'A', 'C'}, {'A', 'D'}, {'B', 'C'}, {'C', 'D'}, {'C', 'E'}, {'D', 'E'}}; 
-
-  std::cout << "Adding vertices" << std::endl;
-  for (j = 0; j < m; j++)
-    g->addVertex(j + 'A');
-  std::cout << "Adding edges" << std::endl;
-  for (j = 0; j < n; j++) {
-    // std::cin >> s >> d;
-    // g->addLink((*g)[s], (*g)[d]);
-    g->addLink((*g)[edges[j][0]], (*g)[edges[j][1]]);
-  }
-  std::cout << "Graph created" << std::endl;
-  std::cout << g->isForest() << std::endl;
+  test();
   return 0;
+}
+
+struct TestCase {
+  int nVertices;
+  int nEdges;
+  std::vector<std::pair<char, char>> links;
+  bool result;
+};
+
+bool testForest(struct TestCase *testCase) {
+  Graph<char> *g = new Graph<char>();
+  int i, j;
+  char start, end;
+
+  for (j = 0; j < testCase->nVertices; j++)
+    g->addVertex(j + 'A');
+
+  for (j = 0; j < testCase->nEdges; j++)
+    g->addLink((*g)[testCase->links[j].first], (*g)[testCase->links[j].second]);
+
+  return g->isForest() == testCase->result;
+};
+
+void test() {
+  std::string line;
+  std::cout << "Test file: ";
+  std::getline(std::cin, line);
+  std::ifstream inputFile(line);
+  if (!inputFile.is_open()) {
+    std::cerr << "Failed to open test file" << std::endl;
+    return;
+  }
+
+  TestCase testCase;
+  char start, end;
+  int testCount = 0, success = 0, i;
+
+  while (std::getline(inputFile, line)) {
+    std::stringstream ss(line);
+    if (!(ss >> testCase.nVertices >> testCase.nEdges)) {
+      std::cerr << "Invalid format in vertices/edges line." << std::endl;
+      continue;
+    }
+
+    for (i = 0; i < testCase.nEdges; i++) {
+      std::getline(inputFile, line);
+      std::stringstream sss(line);
+      sss >> start >> end;
+      testCase.links.push_back({start, end});
+    }
+
+    if (!std::getline(inputFile, line) || (line != "0" && line != "1")) {
+      std::cerr << "Missing or invalid result for test case " << testCount + 1
+                << std::endl;
+      continue;
+    }
+    testCase.result = (line == "1");
+
+    if (testForest(&testCase))
+      success++;
+    else
+      std::cerr << "Test case " << testCount + 1 << " failed." << std::endl;
+
+    testCount++;
+    testCase.links.clear();
+
+    // Ignore next line
+    std::getline(inputFile, line);
+  }
+
+  // Summary
+  std::cout << "Total test: " << testCount << std::endl;
+  std::cout << "Success: " << success << std::endl;
 }
 
 // int main() {
