@@ -1,7 +1,11 @@
+#include <climits>
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
+#include <queue>
+#include <set>
 #include <stdexcept>
+#include <unordered_map>
 
 template <class T> class Node {
 public:
@@ -172,6 +176,8 @@ public:
     std::cout << std::endl;
   }
 
+  ListNode<T> *getHead() const { return head; };
+
 protected:
   ListNode<T> *head, *tail;
 };
@@ -193,6 +199,8 @@ public:
       return NULL;
     }
   }
+
+  LinkList<WeightedGraphEdge<V, E> *> *getEdgeList() const { return list; };
 
 private:
   LinkList<WeightedGraphEdge<V, E> *> *list;
@@ -239,12 +247,36 @@ public:
   }
   void addLink(WeightedGraphVertex<V, E> *v1, WeightedGraphVertex<V, E> *v2,
                E w) {
+
+    // Should check the existence of the edge between the two vertices and
+    // update if necessary
+    ListNode<WeightedGraphEdge<V, E> *> *tmp = edge->getHead();
+    while (tmp) {
+      if (tmp->getData()->getAnotherEnd(v1) == v2) {
+        // Update the edge weight without creating another edge between the same
+        // vertices
+        tmp->getData()->setData(w);
+        return;
+      }
+      tmp = tmp->getNext();
+    }
+
     WeightedGraphEdge<V, E> *edge = new WeightedGraphEdge<V, E>(w, v1, v2);
     v1->addEdge(edge);
     if (v1 != v2)
       v2->addEdge(edge);
+    this->edge->addFromTail(edge);
+    this->edgeCount++;
   }
   WeightedGraphVertex<V, E> *addVertex(V d) {
+    /// Should check if the vertex already exist before adding it to the graph
+    ListNode<WeightedGraphVertex<V, E> *> *tmp = this->vertex->getHead();
+    while (tmp) {
+      if (tmp->getData()->getData() == d)
+        return tmp->getData();
+      tmp = tmp->getNext();
+    }
+
     WeightedGraphVertex<V, E> *v = new WeightedGraphVertex<V, E>(d);
     vertex->addFromTail(v);
     vertexCount++;
@@ -269,7 +301,89 @@ public:
   return null if n is not a vertex in this graph
   return the shorest path tree with v as root
   */
-  WeightedGraph *shortestPathTree(WeightedGraphVertex<V, E> *v) {}
+  WeightedGraph *shortestPathTree(WeightedGraphVertex<V, E> *v) {
+    // Contains a tuple of the vertex and the computed distance
+    std::unordered_map<WeightedGraphVertex<V, E> *, int> distance;
+    bool sourceExists = false;
+
+    // Check if the vertex is in the graph and initialize the distances while
+    // you are at it
+    ListNode<WeightedGraphVertex<V, E> *> *tmp = vertex->getHead();
+    while (tmp) {
+      if (tmp->getData() == v) {
+        distance[tmp->getData()] = 0;
+        sourceExists = true;
+      } else
+        distance[tmp->getData()] = INT_MAX;
+      tmp = tmp->getNext();
+    }
+    if (!sourceExists)
+      return nullptr;
+
+    WeightedGraph<V, E> *shortestPath = new WeightedGraph<V, E>();
+
+    // Contains all the visited vertices and the parent vertex by which they
+    // were accessed
+    std::unordered_map<WeightedGraphVertex<V, E> *, WeightedGraphVertex<V, E> *>
+        visited; // { current, previous }
+
+    // Contains a set that will help the BFS traversal of the graph and works
+    // like a priority queue
+    auto cmp = [](std::pair<WeightedGraphVertex<V, E> *, int> a,
+                  std::pair<WeightedGraphVertex<V, E> *, int> b) {
+      return a.second < b.second;
+    };
+    std::set<std::pair<WeightedGraphVertex<V, E> *, int>> set;
+
+    // Enqueue the source
+    set.insert({v, 0});
+
+    // BFS traversal
+    WeightedGraphVertex<V, E> *otherEnd = nullptr;
+    WeightedGraphVertex<V, E> *prevVertex = nullptr;
+    WeightedGraphVertex<V, E> *v1, *v2;
+    ListNode<WeightedGraphEdge<V, E> *> *tmpEdge = nullptr;
+    int newDistance;
+    while (!set.empty()) {
+      auto [curVertex, curDist] = *(set.begin());
+      set.erase(*set.begin());
+
+      // Visit the neighbors while updating the distance if less than the one
+      // stored
+      tmpEdge = curVertex->getEdgeList()->getHead();
+
+      // Should add the visited vertex to the graph and get all the distances as
+      // edge values
+      v1 = shortestPath->addVertex(curVertex->getData());
+      while (tmpEdge) {
+        otherEnd = tmpEdge->getData()->getAnotherEnd(curVertex);
+        if (!visited[otherEnd]) {
+          newDistance = distance[curVertex] + tmpEdge->getData()->getData();
+          if (newDistance < distance[otherEnd]) {
+            // Find and update the distance in the priority queue if it exist,
+            // add it if not
+            auto it = set.find({otherEnd, distance[otherEnd]});
+            if (it != set.end())
+              set.erase(it);
+
+            distance[otherEnd] = newDistance;
+            set.insert({otherEnd, distance[otherEnd]});
+            v2 = shortestPath->addVertex(otherEnd->getData());
+
+            shortestPath->addLink(v1, v2, newDistance);
+          }
+        }
+        tmpEdge = tmpEdge->getNext();
+      }
+
+      // Once you are done visiting all the neighbors, mark the current node as
+      // visited and move on to the next element in the top of the heap
+      visited[curVertex] = prevVertex;
+      prevVertex = curVertex;
+    }
+
+    return shortestPath;
+  }
 
 private:
   LinkList<WeightedGraphVertex<V, E> *> *vertex;
@@ -280,14 +394,14 @@ private:
 int main() {
   WeightedGraph<char, int> *g = new WeightedGraph<char, int>();
   WeightedGraph<char, int> *tree;
-  int j, k, i, l;
+  int j, k, i, l, n = 5;
   srand(time(NULL));
-  for (j = 0; j < 5; j++) {
+  for (j = 0; j < n; j++) {
     g->addVertex(j + 'a');
   }
-  for (j = 0; j < 5; j++) {
-    k = rand() % 5;
-    i = rand() % 5;
+  for (j = 0; j < n; j++) {
+    k = rand() % n;
+    i = rand() % n;
     l = rand() % 100;
     g->addLink((*g)[k], (*g)[i], l);
   }
