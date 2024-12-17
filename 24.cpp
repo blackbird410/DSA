@@ -175,6 +175,8 @@ public:
     std::cout << std::endl;
   }
 
+  ListNode<T> *getHead() const { return head; };
+
 protected:
   ListNode<T> *head, *tail;
 };
@@ -195,7 +197,18 @@ public:
     table[k]->addFromTail(data);
     return true;
   }
-  Pair *search(T1 key) {}
+  Pair *search(T1 key) {
+    unsigned int k = HASHfunction(key);
+    ListNode<Pair *> *tmp = table[k]->getHead();
+    while (tmp) {
+      if (tmp->getData()->key == key)
+        return tmp->getData();
+
+      tmp = tmp->getNext();
+    };
+
+    return nullptr;
+  }
 
 private:
   LinkList<Pair *> *table[100];
