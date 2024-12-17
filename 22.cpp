@@ -4,6 +4,7 @@
 #include <queue>
 #include <stdexcept>
 #include <unordered_map>
+#include <vector>
 
 template <class T> class Node {
 public:
@@ -174,12 +175,13 @@ public:
     std::cout << std::endl;
   }
 
-  ListNode<T>* getHead() const { return head; };
+  ListNode<T> *getHead() const { return head; };
 
 protected:
   ListNode<T> *head, *tail;
 };
 
+template <class V, class E> class WeightedGraph;
 template <class V, class E> class WeightedGraphEdge;
 
 template <class V, class E> class WeightedGraphVertex : public Node<V> {
@@ -200,6 +202,7 @@ public:
 
 private:
   LinkList<WeightedGraphEdge<V, E> *> *list;
+  friend class WeightedGraph<V, E>;
 };
 
 template <class V, class E> class WeightedGraphEdge : public Node<E> {
@@ -226,8 +229,7 @@ public:
   WeightedGraphVertex<V, E> *operator[](int n) {
     try {
       return end[n];
-    }
-    catch (const std::invalid_argument e) {
+    } catch (const std::invalid_argument e) {
       return nullptr;
     }
   }
@@ -238,10 +240,11 @@ private:
 
 template <class V, class E> class WeightedGraph {
 public:
-  WeightedGraph() :vertexCount(0), edgeCount(0) {
+  WeightedGraph() : vertexCount(0), edgeCount(0) {
     vertex = new LinkList<WeightedGraphVertex<V, E> *>();
     edge = new LinkList<WeightedGraphEdge<V, E> *>();
   }
+
   WeightedGraphVertex<V, E> *operator[](int n) {
     try {
       return (*vertex)[n].getData();
@@ -259,6 +262,14 @@ public:
     this->edgeCount++;
   }
   WeightedGraphVertex<V, E> *addVertex(V d) {
+    /// Should check if the vertex already exist before adding it to the graph
+    ListNode<WeightedGraphVertex<V, E> *> *tmp = getVertexList()->getHead();
+    while (tmp) {
+      if (tmp->getData()->getData() == d)
+        return tmp->getData();
+      tmp = tmp->getNext();
+    }
+
     WeightedGraphVertex<V, E> *v = new WeightedGraphVertex<V, E>(d);
     vertex->addFromTail(v);
     vertexCount++;
@@ -288,11 +299,12 @@ public:
     // ----------------
     // - First select the edge with the minimun weight
     // - Build a new graph by selecting connected edges with minimum weights if
-    //    the graph does not have cycly by adding them
+    //    the graph does not have cycle by adding them
 
-    // Find the edge with the minimum weight
-    std::cout << "Searching for minimum edge..." << std::endl;
-    ListNode<WeightedGraphEdge<V, E> *> *tmp = edge->getHead();
+    //  TODO: Reuse the already existing edges and vertices in the graph
+
+    // Find the edge with the minimum weight linked to the root v
+    ListNode<WeightedGraphEdge<V, E> *> *tmp = v->list->getHead();
     WeightedGraphEdge<V, E> *minEdge = tmp->getData();
 
     while (tmp) {
@@ -303,65 +315,108 @@ public:
     }
 
     WeightedGraph *minSpanningTree = new WeightedGraph<V, E>();
+
     // Get the vertice connected to the minEdge
-    WeightedGraphVertex<V, E>* first = minEdge->getAnotherEnd(nullptr);
-    WeightedGraphVertex<V, E>* second = minEdge->getAnotherEnd(first);
-    minSpanningTree->addVertex(first->getData());
-    minSpanningTree->addVertex(second->getData());
-    minSpanningTree->addLink(&*first, &*second, minEdge->getData());
-    std::cout << "Added " << minSpanningTree->getVertexCount() << " vertices" << std::endl;
+    WeightedGraphVertex<V, E> *first = minEdge->getAnotherEnd(nullptr), *firstA;
+    WeightedGraphVertex<V, E> *second = minEdge->getAnotherEnd(first), *secondA;
+    WeightedGraphVertex<V, E> *v1 =
+        minSpanningTree->addVertex(first->getData());
+    WeightedGraphVertex<V, E> *v2 =
+        minSpanningTree->addVertex(second->getData());
+    minSpanningTree->addLink(v1, v2, minEdge->getData());
 
+    bool firstVertexExist;
+    bool secondVertexExist;
+    bool edgeExist;
+    ListNode<WeightedGraphVertex<V, E> *> *p = nullptr;
+    ListNode<WeightedGraphEdge<V, E> *> *pTrav = nullptr;
 
-    ListNode<WeightedGraphVertex<V, E>*>* firstVertexExist = nullptr;
-    ListNode<WeightedGraphVertex<V, E>*>* secondVertexExist = nullptr;
-    ListNode<WeightedGraphEdge<V, E>*>* edgeExist = nullptr;
-    while (minSpanningTree->isForest()) {
-
+    while (true) {
       tmp = edge->getHead();
       minEdge = nullptr;
-      // Find the smallest edge that is connected to any of the other already selected vertices
+
+      // Find the smallest edge that is connected to the already selected
+      // vertices
       while (tmp) {
-        // Check if the edge is connected any of the others in minSpanningTree
-        // Not already included
+        if (minEdge)
+          // Check if the edge is connected any of the others in minSpanningTree
+          // Not already included
 
-        // Check the existence of the current edge in the minSpanningTree
-        if (!minSpanningTree->getEdgeList()->exist(static_cast<WeightedGraphEdge<V, E>*>(tmp->getData()))) {
+          // Check the existence of the current edge in the minSpanningTree
+          pTrav = minSpanningTree->getEdgeList()->getHead();
+        edgeExist = false;
+        while (pTrav) {
+          // Check the first and second vertex
           first = tmp->getData()->getAnotherEnd(nullptr);
-          firstVertexExist = minSpanningTree->getVertexList()->exist(static_cast<WeightedGraphVertex<V, E>*>(first->getData()));
-          secondVertexExist = minSpanningTree->getVertexList()->exist(static_cast<WeightedGraphVertex<V, E>*>(tmp->getAnotherEnd(first)->getData()));
+          second = tmp->getData()->getAnotherEnd(first);
+          firstA = pTrav->getData()->getAnotherEnd(nullptr);
+          secondA = pTrav->getData()->getAnotherEnd(firstA);
+          if ((first->getData() == firstA->getData() &&
+               second->getData() == secondA->getData()) ||
+              (first->getData() == secondA->getData() &&
+               second->getData() == firstA->getData())) {
+            edgeExist = true;
+            break;
+          }
+          pTrav = pTrav->getNext();
+        }
 
-          if ((firstVertexExist || secondVertexExist))
+        if (!edgeExist) {
+          first = tmp->getData()->getAnotherEnd(nullptr);
+          second = tmp->getData()->getAnotherEnd(first);
+
+          // Check the existence of the first vertex
+          p = minSpanningTree->getVertexList()->getHead();
+          firstVertexExist = false;
+          while (p) {
+            if (p->getData()->getData() == first->getData()) {
+              firstVertexExist = true;
+              break;
+            }
+            p = p->getNext();
+          }
+
+          // Check the existence of the second vertex if the first was not found
+          secondVertexExist = false;
+          p = minSpanningTree->getVertexList()->getHead();
+          while (p) {
+            if (p->getData()->getData() == second->getData()) {
+              secondVertexExist = true;
+              break;
+            }
+            p = p->getNext();
+          }
+
+          // Only one of the vertices can exist, otherwise it will cause a cycle
+          if ((firstVertexExist && !secondVertexExist) ||
+              (!firstVertexExist && secondVertexExist))
             if (!minEdge || tmp->getData()->getData() < minEdge->getData())
               minEdge = tmp->getData();
         }
-        
+
         tmp = tmp->getNext();
+        // std::cin.get();
       }
 
       if (minEdge) {
+        // One of the vertices does not exist in the spanning tree already
+        first = minEdge->getAnotherEnd(nullptr);
+        second = minEdge->getAnotherEnd(first);
 
-      }
-
+        v1 = minSpanningTree->addVertex(first->getData());
+        v2 = minSpanningTree->addVertex(second->getData());
+        minSpanningTree->addLink(v1, v2, minEdge->getData());
+      } else
+        break;
     }
 
-    return nullptr;
+    return minSpanningTree;
   }
 
-  bool isForest() {
-    std::unordered_map<WeightedGraphVertex<V, E> *, bool> visited;
-    for (int i = 0; i < vertexCount; i++)
-      visited[(*vertex)[i].getData()] = false;
-
-    for (int i = 0; i < vertexCount; i++) {
-      WeightedGraphVertex<V, E> *start = (*vertex)[i].getData();
-      if (!visited[start] && hasCycle(start, visited))
-        return false;
-    }
-    return true;
+  LinkList<WeightedGraphVertex<V, E> *> *getVertexList() const {
+    return vertex;
   }
-
-  LinkList<WeightedGraphVertex<V, E>*>* getVertexList() const { return vertex; }
-  LinkList<WeightedGraphEdge<V, E>*>* getEdgeList() const { return edge; }
+  LinkList<WeightedGraphEdge<V, E> *> *getEdgeList() const { return edge; }
   int getVertexCount() const { return vertexCount; };
   int getEdgeCount() const { return edgeCount; };
 
@@ -369,50 +424,23 @@ private:
   LinkList<WeightedGraphVertex<V, E> *> *vertex;
   LinkList<WeightedGraphEdge<V, E> *> *edge;
   int vertexCount, edgeCount;
-
-  bool hasCycle(WeightedGraphVertex<V, E> *start,
-                std::unordered_map<WeightedGraphVertex<V, E> *, bool> &visited) {
-    std::queue<std::pair<WeightedGraphVertex<V, E> *, WeightedGraphVertex<V, E> *>> q;
-
-    // Add the source with no parent
-    q.push({start, nullptr});
-    visited[start] = true;
-
-    while (!q.empty()) {
-      auto [node, parent] = q.front();
-      q.pop();
-
-      // Visit all the adjacent nodes
-      ListNode<WeightedGraphVertex<V, E> *> *adjacentNode = node->list->getHead();
-      while (adjacentNode && adjacentNode->getData() != nullptr) {
-        WeightedGraphVertex<V, E> *adj = adjacentNode->getData();
-
-        if (!visited[adj]) {
-          visited[adj] = true;
-          q.push({adj, node});
-        } else if (parent != adj) {
-          return true;
-        }
-        adjacentNode = (adjacentNode->getNext() &&
-                        isLinked(adjacentNode->getNext()->getData(),
-                                 adjacentNode->getData()))
-                           ? adjacentNode->getNext()
-                           : nullptr;
-      }
-    }
-
-    return false;
-  }
 };
 
 int main() {
   WeightedGraph<char, int> *g = new WeightedGraph<char, int>();
   WeightedGraph<char, int> *tree;
+  // int edges[] = {19, 84, 26, 34, 30 };
   int j, k, i, l;
   srand(time(NULL));
   for (j = 0; j < 5; j++) {
     g->addVertex(j + 'a');
   }
+  // g->addLink((*g)[0], (*g)[2], edges[0]);
+  // g->addLink((*g)[2], (*g)[1], edges[1]);
+  // g->addLink((*g)[1], (*g)[3], edges[2]);
+  // g->addLink((*g)[3], (*g)[4], edges[3]);
+  // g->addLink((*g)[4], (*g)[0], edges[4]);
+
   for (j = 0; j < 5; j++) {
     k = rand() % 5;
     i = rand() % 5;
@@ -421,6 +449,7 @@ int main() {
   }
   g->adjList();
   tree = g->minimumSpanningTree((*g)[0]);
+  // std::cout << "--------------------------------------------------" << std::endl;
   tree->adjList();
   return 0;
 }
