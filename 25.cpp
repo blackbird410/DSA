@@ -203,8 +203,8 @@ public:
   }
   Pair *search(T1 key) {
     unsigned int k = HASHfunction(key);
-    if (table[k] != NULL) {
-      return (table[k]->key == key) ? table[k] : nullptr;
+    if (table[k] != NULL && table[k]->key == key) {
+      return table[k];
     }
     if (secondTable != NULL) {
       return secondTable->search(key);
