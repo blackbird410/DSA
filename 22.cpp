@@ -301,7 +301,17 @@ public:
     // - Build a new graph by selecting connected edges with minimum weights if
     //    the graph does not have cycle by adding them
 
-    //  TODO: Reuse the already existing edges and vertices in the graph
+    bool sourceExists = false;
+    ListNode<WeightedGraphVertex<V, E> *> *tmpV = vertex->getHead();
+    while (tmpV) {
+      if (tmpV->getData() == v) {
+        sourceExists = true;
+        break;
+      }
+      tmpV = tmpV->getNext();
+    }
+    if (!sourceExists)
+      return nullptr;
 
     // Find the edge with the minimum weight linked to the root v
     ListNode<WeightedGraphEdge<V, E> *> *tmp = v->list->getHead();
@@ -449,7 +459,8 @@ int main() {
   }
   g->adjList();
   tree = g->minimumSpanningTree((*g)[0]);
-  // std::cout << "--------------------------------------------------" << std::endl;
+  // std::cout << "--------------------------------------------------" <<
+  // std::endl;
   tree->adjList();
   return 0;
 }
